@@ -72,10 +72,10 @@ async function initializeBrain() {
     
     if (isDashboard) {
         document.getElementById('timestamp').innerHTML = `<span class="pulse-dot"></span> As of ${new Date().toLocaleString()}`;
-        document.getElementById('val-91').innerText = `₱${basePrices.p91.toFixed(2)}`;
-        document.getElementById('val-95').innerText = `₱${basePrices.p95.toFixed(2)}`;
-        document.getElementById('val-97').innerText = `₱${basePrices.p97.toFixed(2)}`;
-        document.getElementById('val-dsl').innerText = `₱${basePrices.dsl.toFixed(2)}`;
+        document.getElementById('val-91').innerText = `₱${basePrices.p91.toFixed(2)} / L`;
+        document.getElementById('val-95').innerText = `₱${basePrices.p95.toFixed(2)} / L`;
+        document.getElementById('val-97').innerText = `₱${basePrices.p97.toFixed(2)} / L`;
+        document.getElementById('val-dsl').innerText = `₱${basePrices.dsl.toFixed(2)} / L`;
         generateForecast();
     }
     
