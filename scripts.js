@@ -28,6 +28,17 @@ async function initializeBrain() {
         document.getElementById('training-status').innerText = "Training Neural Network...";
     }
     
+    let todayBrent = 82.50; 
+    let todayFx = 56.10;   
+
+    try {
+        const marketResponse = await fetch('https://api.exchangerate-api.com/v4/latest/USD');
+        const marketData = await marketResponse.json();
+        todayFx = marketData.rates.PHP;
+    } catch (e) {
+        console.warn("Market data fetch failed, using fallbacks.");
+    }
+
     const inputs = historicalData.map(d => [d.brent, d.fx]);
     const labels = historicalData.map(d => [d.p91, d.p95, d.p97, d.dsl]);
 
@@ -62,9 +73,6 @@ async function initializeBrain() {
         document.getElementById('model-accuracy').innerText = "94.2%";
     }
 
-    const todayBrent = 82.50;
-    const todayFx = 56.10;
-    
     const scaledToday = [
         (todayBrent - meanX[0]) / stdX[0],
         (todayFx - meanX[1]) / stdX[1]
