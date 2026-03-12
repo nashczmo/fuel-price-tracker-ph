@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fuel Price Intelligence - Dashboard</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-brand">FuelTrack</div>
+        <div class="nav-links">
+            <a href="index.html" class="active">Dashboard</a>
+            <a href="calculator.html">Logistics Calculator</a>
+        </div>
+        <div class="live-clock" id="live-clock">--:--:--</div>
+    </nav>
+
+    <div class="main-content">
+        <div class="timestamp" id="timestamp">
+            <span class="pulse-dot"></span> Initialization Sequence...
+        </div>
+        
+        <div class="metric-grid">
+            <div class="metric-card">
+                <div class="label">91 REGULAR</div>
+                <div class="value" id="val-91">₱---</div>
+                <div class="sub">Xtra Advance, FuelSave</div>
+            </div>
+            <div class="metric-card">
+                <div class="label">95 OCTANE</div>
+                <div class="value" id="val-95">₱---</div>
+                <div class="sub">XCS, V-Power</div>
+            </div>
+            <div class="metric-card">
+                <div class="label">97+ ULTRA</div>
+                <div class="value" id="val-97">₱---</div>
+                <div class="sub">Blaze 100, Racing</div>
+            </div>
+            <div class="metric-card">
+                <div class="label">DIESEL</div>
+                <div class="value" id="val-dsl">₱---</div>
+                <div class="sub">Turbo, Power Diesel</div>
+            </div>
+        </div>
+
+        <div class="dashboard-grid">
+            <div class="chart-container">
+                <h3>Price Trend Prediction (7 Days)</h3>
+                <canvas id="forecastChart"></canvas>
+            </div>
+            <div class="stats-container">
+                <h3>System Intelligence</h3>
+                <div class="accuracy-metric">
+                    <span>Model Confidence</span>
+                    <strong id="model-accuracy">Loading...</strong>
+                </div>
+                <p class="methodology"><strong>Architecture:</strong> Client-Side Neural Network (TensorFlow.js)<br><strong>Status:</strong> <span id="training-status" style="color:#eab308;">Awaiting Training</span></p>
+            </div>
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>

@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fuel Price Intelligence - Calculator</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-brand">FuelTrack</div>
+        <div class="nav-links">
+            <a href="index.html">Dashboard</a>
+            <a href="calculator.html" class="active">Logistics Calculator</a>
+        </div>
+        <div class="live-clock" id="live-clock">--:--:--</div>
+    </nav>
+
+    <div class="main-content">
+        <div class="calc-container">
+            <h3>Operational Cost Calculator</h3>
+            <p class="methodology" style="margin-bottom: 24px;">Prices are projected live via the baseline TensorFlow model and modified by geographic logistics constants.</p>
+            
+            <div class="topbar-section" style="margin-bottom: 24px;">
+                <label>Delivery Region</label>
+                <select id="region-select">
+                    <option value="0">Metro Manila (Baseline)</option>
+                    <option value="1.50">North Luzon</option>
+                    <option value="1.20">South Luzon</option>
+                    <option value="2.50">Visayas</option>
+                    <option value="3.00">Mindanao</option>
+                </select>
+            </div>
+
+            <div class="calc-grid">
+                <div>
+                    <label>Fuel Grade</label>
+                    <select id="calc-fuel">
+                        <option value="p91">91 Regular</option>
+                        <option value="p95">95 Octane</option>
+                        <option value="p97">97+ Ultra</option>
+                        <option value="dsl">Diesel</option>
+                    </select>
+                </div>
+                <div>
+                    <label>Tank (L)</label>
+                    <input type="number" id="calc-tank" value="40">
+                </div>
+                <div>
+                    <label>Efficiency (km/L)</label>
+                    <input type="number" id="calc-eff" value="12">
+                </div>
+                <div>
+                    <label>Distance (km)</label>
+                    <input type="number" id="calc-dist" value="50">
+                </div>
+            </div>
+
+            <div class="calc-results-large">
+                <div class="result-box">
+                    <span>Full Tank Requirement</span>
+                    <strong id="res-tank">₱0.00</strong>
+                </div>
+                <div class="result-box">
+                    <span>Trip Expenditure</span>
+                    <strong id="res-trip">₱0.00</strong>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
