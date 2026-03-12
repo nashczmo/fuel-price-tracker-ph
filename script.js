@@ -28,7 +28,7 @@ function synthesizeTrainingData() {
 async function initializeBrain() {
     let todayBrent = 82.50; 
     let todayFx = 56.10;   
-    const FRED_API_KEY = "INSERT_YOUR_FRED_API_KEY_HERE";
+    const FRED_API_KEY = "06bca40a9831d61e9ef8b321dae0ec7";
 
     try {
         const fxResponse = await fetch('https://api.exchangerate-api.com/v4/latest/USD');
@@ -178,3 +178,4 @@ document.querySelectorAll('.cb-container').forEach((container, idx) => {
 });
 
 initializeBrain();
+
