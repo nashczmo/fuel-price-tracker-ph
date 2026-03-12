@@ -3,88 +3,61 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Philippine Fuel Price Tracker</title>
+    <title>Fuel Price Intelligence - Dashboard</title>
     <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
+    <nav class="navbar">
+        <div class="nav-brand">FuelTrack</div>
+        <div class="nav-links">
+            <a href="index.html" class="active">Dashboard</a>
+            <a href="calculator.html">Logistics Calculator</a>
+        </div>
+        <div class="live-clock" id="live-clock">--:--:--</div>
+    </nav>
+
     <div class="main-content">
-        <h1 class="main-title">Philippine Fuel Price Tracker</h1>
-        
-        <div class="timestamp-badge" id="timestamp">
+        <div class="timestamp" id="timestamp">
             <span class="pulse-dot"></span> Initialization Sequence...
         </div>
-
-        <div class="market-alert">
-            <strong>MARKET ALERT:</strong> Conflict in the Middle East may affect global oil supply, which could lead to possible fuel price increases.
-        </div>
-
-        <h2 class="section-heading">Estimated Current Pump Prices</h2>
         
         <div class="metric-grid">
             <div class="metric-card">
                 <div class="label">91 REGULAR</div>
-                <div class="sub">AKA: Xtra Advance, FuelSave, Silver</div>
-                <div class="value" id="val-91">₱---</div>
+                <div class="value" id="val-91">₱--- / L</div>
+                <div class="sub">Xtra Advance, FuelSave</div>
             </div>
             <div class="metric-card">
                 <div class="label">95 OCTANE</div>
-                <div class="sub">AKA: XCS, V-Power, Platinum</div>
-                <div class="value" id="val-95">₱---</div>
+                <div class="value" id="val-95">₱--- / L</div>
+                <div class="sub">XCS, V-Power</div>
             </div>
             <div class="metric-card">
                 <div class="label">97+ ULTRA</div>
-                <div class="sub">AKA: Blaze 100, Racing</div>
-                <div class="value" id="val-97">₱---</div>
+                <div class="value" id="val-97">₱--- / L</div>
+                <div class="sub">Blaze 100, Racing</div>
             </div>
             <div class="metric-card">
                 <div class="label">DIESEL</div>
-                <div class="sub">AKA: Turbo, Max, Power</div>
-                <div class="value" id="val-dsl">₱---</div>
-            </div>
-        </div>
-
-        <div class="controls-section">
-            <label>Select Prediction Period</label>
-            <select id="forecast-period">
-                <option value="7">7 Days Forecast</option>
-                <option value="15">15 Days Forecast</option>
-                <option value="30">30 Days Forecast</option>
-            </select>
-
-            <label style="margin-top: 16px; display: block;">Select Fuel Types to Display on Graph</label>
-            <div class="checkbox-group">
-                <label class="cb-container"><input type="checkbox" value="0" checked> 91 RON (Xtra Adv...) <span class="checkmark" style="background-color: #10b981;"></span></label>
-                <label class="cb-container"><input type="checkbox" value="1" checked> 95 RON (XCS / V-...) <span class="checkmark" style="background-color: #3b82f6;"></span></label>
-                <label class="cb-container"><input type="checkbox" value="2" checked> 97+ RON (Blaze 1...) <span class="checkmark" style="background-color: #8b5cf6;"></span></label>
-                <label class="cb-container"><input type="checkbox" value="3" checked> Diesel (Turbo / M...) <span class="checkmark" style="background-color: #ef4444;"></span></label>
+                <div class="value" id="val-dsl">₱--- / L</div>
+                <div class="sub">Turbo, Power Diesel</div>
             </div>
         </div>
 
         <div class="dashboard-grid">
             <div class="chart-container">
-                <h3 id="chart-title">Price Trend Prediction (7 Days)</h3>
+                <h3>Price Trend Prediction (7 Days)</h3>
                 <canvas id="forecastChart"></canvas>
             </div>
-            
             <div class="stats-container">
-                <h3>Model Stats</h3>
+                <h3>System Intelligence</h3>
                 <div class="accuracy-metric">
-                    <span>Estimated Accuracy</span>
-                    <strong id="model-accuracy">96.8%</strong>
+                    <span>Model Confidence</span>
+                    <strong id="model-accuracy">Loading...</strong>
                 </div>
-                
-                <div class="table-container">
-                    <table id="forecast-table">
-                        <thead>
-                            <tr id="table-headers">
-                                <th>Date</th>
-                            </tr>
-                        </thead>
-                        <tbody id="table-body">
-                        </tbody>
-                    </table>
-                </div>
+                <p class="methodology"><strong>Architecture:</strong> Client-Side Neural Network (TensorFlow.js)<br><strong>Status:</strong> <span id="training-status" style="color:#eab308;">Awaiting Training</span></p>
             </div>
         </div>
     </div>
