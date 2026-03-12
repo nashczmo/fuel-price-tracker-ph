@@ -11,13 +11,10 @@ const historicalData = [
 function startClock() {
     const clockElement = document.getElementById('live-clock');
     if (!clockElement) return;
-    
-    function update() {
-        const now = new Date();
-        clockElement.innerText = now.toLocaleTimeString('en-US', { hour12: true });
-    }
-    setInterval(update, 1000);
-    update();
+    setInterval(() => {
+        clockElement.innerText = new Date().toLocaleTimeString('en-US', { hour12: true });
+    }, 1000);
+    clockElement.innerText = new Date().toLocaleTimeString('en-US', { hour12: true });
 }
 
 async function initializeBrain() {
@@ -36,7 +33,7 @@ async function initializeBrain() {
         const marketData = await marketResponse.json();
         todayFx = marketData.rates.PHP;
     } catch (e) {
-        console.warn("Market data fetch failed, using fallbacks.");
+        console.warn("API fallback engaged.");
     }
 
     const inputs = historicalData.map(d => [d.brent, d.fx]);
@@ -51,10 +48,7 @@ async function initializeBrain() {
         Math.sqrt(inputs.reduce((sum, val) => sum + Math.pow(val[1] - meanX[1], 2), 0) / inputs.length)
     ];
 
-    const scaledInputs = inputs.map(d => [
-        (d[0] - meanX[0]) / stdX[0],
-        (d[1] - meanX[1]) / stdX[1]
-    ]);
+    const scaledInputs = inputs.map(d => [(d[0] - meanX[0]) / stdX[0], (d[1] - meanX[1]) / stdX[1]]);
 
     const model = tf.sequential();
     model.add(tf.layers.dense({ units: 64, activation: 'relu', inputShape: [2] }));
@@ -62,10 +56,7 @@ async function initializeBrain() {
     model.add(tf.layers.dense({ units: 4, activation: 'linear' }));
     model.compile({ optimizer: 'adam', loss: 'meanSquaredError' });
 
-    const xs = tf.tensor2d(scaledInputs);
-    const ys = tf.tensor2d(labels);
-    
-    await model.fit(xs, ys, { epochs: 250, shuffle: true });
+    await model.fit(tf.tensor2d(scaledInputs), tf.tensor2d(labels), { epochs: 250, shuffle: true });
     
     if (isDashboard) {
         document.getElementById('training-status').innerText = "Live / Optimized";
@@ -73,11 +64,7 @@ async function initializeBrain() {
         document.getElementById('model-accuracy').innerText = "94.2%";
     }
 
-    const scaledToday = [
-        (todayBrent - meanX[0]) / stdX[0],
-        (todayFx - meanX[1]) / stdX[1]
-    ];
-    
+    const scaledToday = [(todayBrent - meanX[0]) / stdX[0], (todayFx - meanX[1]) / stdX[1]];
     const prediction = model.predict(tf.tensor2d([scaledToday]));
     const vals = await prediction.data();
 
@@ -85,24 +72,26 @@ async function initializeBrain() {
     
     if (isDashboard) {
         document.getElementById('timestamp').innerHTML = `<span class="pulse-dot"></span> As of ${new Date().toLocaleString()}`;
-        updateDashboardUI();
+        document.getElementById('val-91').innerText = `₱${basePrices.p91.toFixed(2)}`;
+        document.getElementById('val-95').innerText = `₱${basePrices.p95.toFixed(2)}`;
+        document.getElementById('val-97').innerText = `₱${basePrices.p97.toFixed(2)}`;
+        document.getElementById('val-dsl').innerText = `₱${basePrices.dsl.toFixed(2)}`;
         generateForecast();
     }
     
     if (isCalculator) {
         calculateCosts();
-        attachCalculatorListeners();
+        document.getElementById('region-select').addEventListener('change', calculateCosts);
+        document.getElementById('calc-fuel').addEventListener('change', calculateCosts);
+        document.getElementById('calc-tank').addEventListener('input', calculateCosts);
+        document.getElementById('calc-eff').addEventListener('input', calculateCosts);
+        document.getElementById('calc-dist').addEventListener('input', calculateCosts);
     }
 }
 
-function updateDashboardUI() {
-    document.getElementById('val-91').innerText = `₱${basePrices.p91.toFixed(2)}`;
-    document.getElementById('val-95').innerText = `₱${basePrices.p95.toFixed(2)}`;
-    document.getElementById('val-97').innerText = `₱${basePrices.p97.toFixed(2)}`;
-    document.getElementById('val-dsl').innerText = `₱${basePrices.dsl.toFixed(2)}`;
-}
-
 function calculateCosts() {
+    if (!document.getElementById('res-tank')) return;
+    
     const regionMod = parseFloat(document.getElementById('region-select').value);
     const selectedFuel = document.getElementById('calc-fuel').value;
     const tank = parseFloat(document.getElementById('calc-tank').value);
@@ -116,6 +105,8 @@ function calculateCosts() {
 }
 
 function generateForecast() {
+    if (!document.getElementById('forecastChart')) return;
+    
     const days = 7;
     const labels = [];
     const datasets = [
@@ -138,8 +129,7 @@ function generateForecast() {
 
     if (chartInstance) chartInstance.destroy();
     
-    const ctx = document.getElementById('forecastChart').getContext('2d');
-    chartInstance = new Chart(ctx, {
+    chartInstance = new Chart(document.getElementById('forecastChart').getContext('2d'), {
         type: 'line',
         data: { labels, datasets },
         options: {
@@ -152,14 +142,6 @@ function generateForecast() {
             plugins: { legend: { labels: { color: '#c9d1d9' } } }
         }
     });
-}
-
-function attachCalculatorListeners() {
-    document.getElementById('region-select').addEventListener('change', calculateCosts);
-    document.getElementById('calc-fuel').addEventListener('change', calculateCosts);
-    document.getElementById('calc-tank').addEventListener('input', calculateCosts);
-    document.getElementById('calc-eff').addEventListener('input', calculateCosts);
-    document.getElementById('calc-dist').addEventListener('input', calculateCosts);
 }
 
 startClock();
