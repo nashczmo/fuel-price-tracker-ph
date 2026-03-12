@@ -27,13 +27,25 @@ async function initializeBrain() {
     
     let todayBrent = 82.50; 
     let todayFx = 56.10;   
+    const FRED_API_KEY = "06bca40a9831d61e9ef8b321dae0ec7";
 
     try {
-        const marketResponse = await fetch('https://api.exchangerate-api.com/v4/latest/USD');
-        const marketData = await marketResponse.json();
-        todayFx = marketData.rates.PHP;
+        const fxResponse = await fetch('https://api.exchangerate-api.com/v4/latest/USD');
+        const fxData = await fxResponse.json();
+        todayFx = fxData.rates.PHP;
+
+        if (FRED_API_KEY !== "06bca40a9831d61e9ef8b321dae0ec7") {
+            const fredEndpoint = encodeURIComponent(`https://api.stlouisfed.org/api/fred/series/observations?series_id=DCOILBRENTEU&api_key=${FRED_API_KEY}&file_type=json&sort_order=desc&limit=1`);
+            const brentResponse = await fetch(`https://api.allorigins.win/raw?url=${fredEndpoint}`);
+            const brentData = await brentResponse.json();
+            
+            if (brentData && brentData.observations && brentData.observations.length > 0) {
+                const brentValue = parseFloat(brentData.observations[0].value);
+                if (!isNaN(brentValue)) todayBrent = brentValue;
+            }
+        }
     } catch (e) {
-        console.warn("API fallback engaged.");
+        console.warn("Live API fetch failed. Reverting to static baseline.");
     }
 
     const inputs = historicalData.map(d => [d.brent, d.fx]);
@@ -72,10 +84,10 @@ async function initializeBrain() {
     
     if (isDashboard) {
         document.getElementById('timestamp').innerHTML = `<span class="pulse-dot"></span> As of ${new Date().toLocaleString()}`;
-        document.getElementById('val-91').innerText = `₱${basePrices.p91.toFixed(2)}`;
-        document.getElementById('val-95').innerText = `₱${basePrices.p95.toFixed(2)}`;
-        document.getElementById('val-97').innerText = `₱${basePrices.p97.toFixed(2)}`;
-        document.getElementById('val-dsl').innerText = `₱${basePrices.dsl.toFixed(2)}`;
+        document.getElementById('val-91').innerText = `₱${basePrices.p91.toFixed(2)} / L`;
+        document.getElementById('val-95').innerText = `₱${basePrices.p95.toFixed(2)} / L`;
+        document.getElementById('val-97').innerText = `₱${basePrices.p97.toFixed(2)} / L`;
+        document.getElementById('val-dsl').innerText = `₱${basePrices.dsl.toFixed(2)} / L`;
         generateForecast();
     }
     
