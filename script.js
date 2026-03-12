@@ -1,4 +1,4 @@
-let basePrices = { p91: 72.35, p95: 74.50, p97: 82.30, dsl: 75.10 };
+let calculatedPrices = { p91: 0, p95: 0, p97: 0, dsl: 0 };
 let chartInstance = null;
 let forecastDataCache = [];
 
@@ -9,72 +9,36 @@ const fuelConfig = [
     { key: 'dsl', name: 'Diesel (Turbo / Max / Power)', color: '#ef4444' }
 ];
 
-function synthesizeTrainingData() {
-    const data = [];
-    for (let i = 0; i < 100; i++) {
-        let b = 75 + Math.random() * 15;
-        let f = 54 + Math.random() * 4;
-        data.push({
-            brent: b, fx: f,
-            p91: 72.35 + (b - 82.5) * 0.45 + (f - 56.1) * 0.8,
-            p95: 74.50 + (b - 82.5) * 0.48 + (f - 56.1) * 0.85,
-            p97: 82.30 + (b - 82.5) * 0.55 + (f - 56.1) * 0.9,
-            dsl: 75.10 + (b - 82.5) * 0.50 + (f - 56.1) * 0.75
-        });
-    }
-    return data;
-}
-
-async function initializeBrain() {
-    let todayBrent = 82.50; 
-    let todayFx = 56.10;   
-    const FRED_API_KEY = "06bca40a9831d61e9ef8b321dae0ec7";
+async function initializeSystem() {
+    let currentBrent = 82.50; 
+    let currentFx = 56.10;   
+    const FRED_API_KEY = "INSERT_YOUR_FRED_API_KEY_HERE";
 
     try {
         const fxResponse = await fetch('https://api.exchangerate-api.com/v4/latest/USD');
         const fxData = await fxResponse.json();
-        todayFx = fxData.rates.PHP;
+        currentFx = fxData.rates.PHP;
     } catch (e) {
-        // Fallback maintained
+        console.warn("Live API fetch failed. Reverting to static baseline.");
     }
 
-    const hData = synthesizeTrainingData();
-    const inputs = hData.map(d => [d.brent, d.fx]);
-    const labels = hData.map(d => [d.p91, d.p95, d.p97, d.dsl]);
+    const baseline = { p91: 72.35, p95: 74.50, p97: 82.30, dsl: 75.10 };
+    const brentDelta = currentBrent - 82.50;
+    const fxDelta = currentFx - 56.10;
 
-    const meanX = [
-        inputs.reduce((sum, val) => sum + val[0], 0) / inputs.length,
-        inputs.reduce((sum, val) => sum + val[1], 0) / inputs.length
-    ];
-    const stdX = [
-        Math.sqrt(inputs.reduce((sum, val) => sum + Math.pow(val[0] - meanX[0], 2), 0) / inputs.length),
-        Math.sqrt(inputs.reduce((sum, val) => sum + Math.pow(val[1] - meanX[1], 2), 0) / inputs.length)
-    ];
+    calculatedPrices = {
+        p91: baseline.p91 + (brentDelta * 0.45) + (fxDelta * 0.80),
+        p95: baseline.p95 + (brentDelta * 0.48) + (fxDelta * 0.85),
+        p97: baseline.p97 + (brentDelta * 0.55) + (fxDelta * 0.90),
+        dsl: baseline.dsl + (brentDelta * 0.50) + (fxDelta * 0.75)
+    };
 
-    const scaledInputs = inputs.map(d => [(d[0] - meanX[0]) / stdX[0], (d[1] - meanX[1]) / stdX[1]]);
-
-    const model = tf.sequential();
-    model.add(tf.layers.dense({ units: 32, activation: 'relu', inputShape: [2] }));
-    model.add(tf.layers.dense({ units: 16, activation: 'relu' }));
-    model.add(tf.layers.dense({ units: 4, activation: 'linear' }));
-    model.compile({ optimizer: 'adam', loss: 'meanSquaredError' });
-
-    await model.fit(tf.tensor2d(scaledInputs), tf.tensor2d(labels), { epochs: 100, shuffle: true });
-    
-    document.getElementById('model-accuracy').innerText = "93.2%";
-
-    const scaledToday = [(todayBrent - meanX[0]) / stdX[0], (todayFx - meanX[1]) / stdX[1]];
-    const prediction = model.predict(tf.tensor2d([scaledToday]));
-    const vals = await prediction.data();
-
-    basePrices = { p91: vals[0], p95: vals[1], p97: vals[2], dsl: vals[3] };
-    
     document.getElementById('timestamp').innerHTML = `<span class="pulse-dot"></span> As of ${new Date().toLocaleString('en-US', {month: 'long', day: 'numeric', year: 'numeric'})} | ${new Date().toLocaleTimeString('en-US', {hour: '2-digit', minute: '2-digit'})} PST`;
     
-    document.getElementById('val-91').innerText = `₱${basePrices.p91.toFixed(2)}`;
-    document.getElementById('val-95').innerText = `₱${basePrices.p95.toFixed(2)}`;
-    document.getElementById('val-97').innerText = `₱${basePrices.p97.toFixed(2)}`;
-    document.getElementById('val-dsl').innerText = `₱${basePrices.dsl.toFixed(2)}`;
+    document.getElementById('val-91').innerText = `₱${calculatedPrices.p91.toFixed(2)}`;
+    document.getElementById('val-95').innerText = `₱${calculatedPrices.p95.toFixed(2)}`;
+    document.getElementById('val-97').innerText = `₱${calculatedPrices.p97.toFixed(2)}`;
+    document.getElementById('val-dsl').innerText = `₱${calculatedPrices.dsl.toFixed(2)}`;
     
     updateForecast();
 }
@@ -95,10 +59,10 @@ function updateForecast() {
         labels.push(d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }));
 
         forecastDataCache.push({
-            p91: basePrices.p91 * (1 + (Math.random() * 0.015 - 0.005)),
-            p95: basePrices.p95 * (1 + (Math.random() * 0.015 - 0.005)),
-            p97: basePrices.p97 * (1 + (Math.random() * 0.015 - 0.005)),
-            dsl: basePrices.dsl * (1 + (Math.random() * 0.015 - 0.005))
+            p91: calculatedPrices.p91 * (1 + (Math.random() * 0.015 - 0.005)),
+            p95: calculatedPrices.p95 * (1 + (Math.random() * 0.015 - 0.005)),
+            p97: calculatedPrices.p97 * (1 + (Math.random() * 0.015 - 0.005)),
+            dsl: calculatedPrices.dsl * (1 + (Math.random() * 0.015 - 0.005))
         });
     }
 
@@ -171,11 +135,9 @@ document.querySelectorAll('.cb-container input').forEach(cb => {
     cb.addEventListener('change', updateForecast);
 });
 
-// Style Checkboxes initial state
 document.querySelectorAll('.cb-container').forEach((container, idx) => {
     container.style.color = fuelConfig[idx].color;
     container.style.backgroundColor = `rgba(${idx===0?'16,185,129':idx===1?'59,130,246':idx===2?'139,92,246':'239,68,68'}, 0.1)`;
 });
 
-initializeBrain();
-
+initializeSystem();
